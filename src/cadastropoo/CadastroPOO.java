@@ -1,84 +1,254 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package cadastropoo;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.Scanner;
 import model.PessoaFisica;
 import model.PessoaFisicaRepo;
 import model.PessoaJuridica;
 import model.PessoaJuridicaRepo;
+import java.util.List;
 
-/**
- *
- * @author User
- */
 public class CadastroPOO {
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
-        // TODO code application logic here
-        
-        PessoaFisicaRepo repo1 = new PessoaFisicaRepo();
-        
-        PessoaFisica pessoaFisica1 = new PessoaFisica(1, "João", "12345678901", 30);
-        PessoaFisica pessoaFisica2 = new PessoaFisica(2, "Maria", "98765432101", 20);
-        
-        repo1.inserir(pessoaFisica1);
-        repo1.inserir(pessoaFisica2);
-        
-        // Compilador não compila com try-catch. erro: exception IOException is never thrown in body of corresponding try statement
-//        try {
-        repo1.persistir("pessoas_fisicas.dat");
-//        } catch (IOException ex) {
-//            System.out.println("Erro ao persistir dados de pessoas físicas: " + ex.getMessage());
-//        }
-        
-        PessoaFisicaRepo repo2 = new PessoaFisicaRepo();
-        
-        // Compilador não compila com try-catch. erro: exception IOException is never thrown in body of corresponding try statement
-//        try {
-        repo2.recuperar("pessoas_fisicas.dat");
-//        } catch (IOException | ClassNotFoundException ex) {
-//            System.out.println("Erro ao recuperar dados de pessoas físicas: " + ex.getMessage());
-//        }
-        
-        System.out.println("Pessoas físicas recuperadas:");
-        for (PessoaFisica pessoa : repo2.obterTodos()) {
-            pessoa.exibir();
+
+        Scanner scanner = new Scanner(System.in);
+        String prefixoArquivos = "";
+        boolean executando = true;
+
+        PessoaFisicaRepo repoPessoaFisica = new PessoaFisicaRepo();
+        PessoaJuridicaRepo repoPessoaJuridica = new PessoaJuridicaRepo();
+
+        while (executando) {
+            System.out.println("Escolha uma opção:");
+            System.out.println("1. Incluir");
+            System.out.println("2. Alterar");
+            System.out.println("3. Excluir");
+            System.out.println("4. Exibir pelo ID");
+            System.out.println("5. Exibir todos");
+            System.out.println("6. Salvar");
+            System.out.println("7. Recuperar");
+            System.out.println("0. Sair");
+
+            int opcao = scanner.nextInt();
+
+            switch (opcao) {
+                case 1:
+                    System.out.println("F - Pessoa Fisica | J - Pessoa Juridica");
+                    String tipo = scanner.next();
+
+                    switch (tipo) {
+                        case "F":
+                            System.out.println("Informe o ID:");
+                            int id = scanner.nextInt();
+                            System.out.println("Informe o nome:");
+                            String nome = scanner.next();
+                            System.out.println("Informe o CPF:");
+                            String cpf = scanner.next();
+                            System.out.println("Informe a idade:");
+                            int idade = scanner.nextInt();
+
+                            PessoaFisica pessoaFisica = new PessoaFisica(id, nome, cpf, idade);
+                            repoPessoaFisica.inserir(pessoaFisica);
+                            System.out.println("Pessoa física incluída com sucesso.");
+                            break;
+                        case "J":
+                            System.out.println("Informe o ID:");
+                            int idPj = scanner.nextInt();
+                            System.out.println("Informe o nome:");
+                            String nomePj = scanner.next();
+                            System.out.println("Informe o CNPJ:");
+                            String cnpj = scanner.next();
+
+                            PessoaJuridica pessoaJuridica = new PessoaJuridica(idPj, nomePj, cnpj);
+                            repoPessoaJuridica.inserir(pessoaJuridica);
+                            System.out.println("Pessoa jurídica incluída com sucesso.");
+                            break;
+                        default:
+                            System.out.println("Tipo inválido.");
+                    }
+                    break;
+                case 2:
+                    System.out.println("F - Pessoa Fisica | J - Pessoa Juridica");
+                    String tipo2 = scanner.next();
+
+                    switch (tipo2) {
+                        case "F":
+                            System.out.println("Informe o ID da pessoa física a ser alterada:");
+                            int id = scanner.nextInt();
+
+                            PessoaFisica pessoaFisica = repoPessoaFisica.obter(id);
+                            if (pessoaFisica != null) {
+                                System.out.println("Dados atuais da pessoa física:");
+                                pessoaFisica.exibir();
+
+                                System.out.println("Informe o novo nome:");
+                                String nome = scanner.next();
+                                System.out.println("Informe o novo CPF:");
+                                String cpf = scanner.next();
+                                System.out.println("Informe a nova idade:");
+                                int idade = scanner.nextInt();
+
+                                pessoaFisica.setNome(nome);
+                                pessoaFisica.setCpf(cpf);
+                                pessoaFisica.setIdade(idade);
+
+                                repoPessoaFisica.alterar(pessoaFisica);
+                                System.out.println("Pessoa física alterada com sucesso.");
+                            } else {
+                                System.out.println("Pessoa física não encontrada.");
+                            }
+                            break;
+                        case "J":
+                            System.out.println("Informe o ID da pessoa jurídica a ser alterada:");
+                            int idPf = scanner.nextInt();
+
+                            PessoaJuridica pessoaJuridica = repoPessoaJuridica.obter(idPf);
+                            if (pessoaJuridica != null) {
+                                System.out.println("Dados atuais da pessoa jurídica:");
+                                pessoaJuridica.exibir();
+
+                                System.out.println("Informe o novo nome:");
+                                String nome = scanner.next();
+                                System.out.println("Informe o novo CNPJ:");
+                                String cnpj = scanner.next();
+
+                                pessoaJuridica.setNome(nome);
+                                pessoaJuridica.setCnpj(cnpj);
+
+                                repoPessoaJuridica.alterar(pessoaJuridica);
+                                System.out.println("Pessoa jurídica alterada com sucesso.");
+                            } else {
+                                System.out.println("Pessoa jurídica não encontrada.");
+                            }
+                            break;
+                        default:
+                            System.out.println("Tipo inválido.");
+                    }
+                    break;
+                case 3:
+                    System.out.println("F - Pessoa Fisica | J - Pessoa Juridica");
+                    String tipo3 = scanner.next();
+
+                    switch (tipo3) {
+                        case "F":
+                            System.out.println("Informe o ID da pessoa física a ser excluída:");
+                            int id = scanner.nextInt();
+
+                            if (repoPessoaFisica.obter(id) != null) {
+                                repoPessoaFisica.excluir(id);
+                                System.out.println("Pessoa física excluída com sucesso.");
+                            } else {
+                                System.out.println("Pessoa física não encontrada.");
+                            }
+                            break;
+                        case "J":
+                            System.out.println("Informe o ID da pessoa jurídica a ser excluída:");
+                            int idPj = scanner.nextInt();
+
+                            if (repoPessoaJuridica.obter(idPj) != null) {
+                                repoPessoaJuridica.excluir(idPj);
+                                System.out.println("Pessoa jurídica excluída com sucesso.");
+                            } else {
+                                System.out.println("Pessoa jurídica não encontrada.");
+                            }
+                            break;
+                        default:
+                            System.out.println("Tipo inválido.");
+                    }
+                    break;
+                case 4:
+                    System.out.println("F - Pessoa Fisica | J - Pessoa Juridica");
+                    String tipo4 = scanner.next();
+
+                    switch (tipo4) {
+                        case "F":
+                            System.out.println("Informe o ID da pessoa física a ser exibida:");
+                            int id = scanner.nextInt();
+
+                            PessoaFisica pessoaFisica = repoPessoaFisica.obter(id);
+                            if (pessoaFisica != null) {
+                                System.out.println("Dados da pessoa física:");
+                                pessoaFisica.exibir();
+                            } else {
+                                System.out.println("Pessoa física não encontrada.");
+                            }
+                            break;
+                        case "J":
+                            System.out.println("Informe o ID da pessoa jurídica a ser exibida:");
+                            int idPj = scanner.nextInt();
+
+                            PessoaJuridica pessoaJuridica = repoPessoaJuridica.obter(idPj);
+                            if (pessoaJuridica != null) {
+                                System.out.println("Dados da pessoa jurídica:");
+                                pessoaJuridica.exibir();
+                            } else {
+                                System.out.println("Pessoa jurídica não encontrada.");
+                            }
+                            break;
+                        default:
+                            System.out.println("Tipo inválido.");
+                    }
+                    break;
+                case 5:
+                    System.out.println("F - Pessoa Fisica | J - Pessoa Juridica");
+                    String tipo5 = scanner.next();
+
+                    switch (tipo5) {
+                        case "F":
+                            System.out.println("Pessoas Físicas:");
+                            List<PessoaFisica> pessoasFisicas = repoPessoaFisica.obterTodos();
+                            for (PessoaFisica pessoaFisica : pessoasFisicas) {
+                                pessoaFisica.exibir();
+                            }
+                            break;
+                        case "J":
+                            System.out.println("Pessoas Jurídicas:");
+                            List<PessoaJuridica> pessoasJuridicas = repoPessoaJuridica.obterTodos();
+                            for (PessoaJuridica pessoaJuridica : pessoasJuridicas) {
+                                pessoaJuridica.exibir();
+                            }
+                            break;
+                        default:
+                            System.out.println("Tipo inválido.");
+                    }
+                    break;
+                case 6:
+                    System.out.println("Informe o prefixo dos arquivos:");
+                    String prefixo = scanner.next();
+
+                    // Salvar Pessoa Física.
+                    repoPessoaFisica.persistir(prefixo);
+
+                    // Salvar Pessoa Jurídica.
+                    repoPessoaJuridica.persistir(prefixo);
+
+                    System.out.println("Dados salvos com sucesso.");
+                case 7:
+                    System.out.println("Informe o prefixo dos arquivos:");
+                    String prefixoRecuperar = scanner.next();
+
+                    // Recuperar PF
+                    repoPessoaFisica.recuperar(prefixoRecuperar);
+
+                    // Recuperar PJ
+                    repoPessoaJuridica.recuperar(prefixoRecuperar);
+
+                    System.out.println("Dados recuperados com sucesso.");
+                    break;
+                case 0:
+                    // Finalizar a execução
+                    executando = false;
+                    break;
+                default:
+                    System.out.println("Opção inválida. Tente novamente.");
+            }
         }
-        
-        PessoaJuridicaRepo repo3 = new PessoaJuridicaRepo();
-        
-        PessoaJuridica pessoaJuridica1 = new PessoaJuridica(1, "Empresa 1", "12345678901234");
-        PessoaJuridica pessoaJuridica2 = new PessoaJuridica(2, "Empresa 2", "98765432109876");
-        
-        repo3.inserir(pessoaJuridica1);
-        repo3.inserir(pessoaJuridica2);
-        
-        // Compilador não compila com try-catch. erro: exception IOException is never thrown in body of corresponding try statement
-//        try {
-        repo3.persistir("pessoas_juridicas.dat");
-//        } catch (IOException ex) {
-//            System.out.println("Erro ao persistir dados de pessoas jurídicas: " + ex.getMessage());
-//        }
-        
-        PessoaJuridicaRepo repo4 = new PessoaJuridicaRepo();
-        
-        // Compilador não compila com try-catch. erro: exception IOException is never thrown in body of corresponding try statement
-//        try {
-        repo4.recuperar("pessoas_juridicas.dat");
-//        } catch (IOException | ClassNotFoundException ex) {
-//            System.out.println("Erro ao recuperar dados de pessoas jurídicas: " + ex.getMessage());
-//        }
-        
-        System.out.println("Pessoas jurídicas recuperadas:");
-        for (PessoaJuridica pessoa : repo4.obterTodos()) {
-            pessoa.exibir();
-        }
+
+        System.out.println("Programa encerrado.");
     }
-    
 }
